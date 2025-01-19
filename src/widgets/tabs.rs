@@ -2,6 +2,7 @@ use std::{cmp, collections::BTreeMap};
 
 use zellij_tile::{
     prelude::{InputMode, ModeInfo, PaneInfo, PaneManifest, TabInfo},
+    shim::get_focused_pane,
     shim::switch_tab_to,
 };
 
@@ -270,6 +271,15 @@ impl TabsWidget {
 
             if content.contains("{name}") {
                 content = content.replace("{name}", tab_name);
+            }
+
+            if content.contains("{focused}") {
+                let focused_title = match get_focused_pane(tab.position, panes) {
+                    Some(pane_info) => pane_info.title.to_owned(),
+                    None => tab_name.to_owned(),
+                };
+
+                content = content.replace("{focused}", &focused_title);
             }
 
             if content.contains("{index}") {
