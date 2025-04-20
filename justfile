@@ -19,11 +19,10 @@ run target="zjstatus": build
     zellij -s zjframes-dev --config ./tests/zjframes/config.kdl -n ./tests/zjframes/layout.kdl
     ;;
   *)
-    ../zellij/target/release/zellij \
+    zellij \
       -s zjstatus-dev \
       --config ./tests/zjstatus/config.kdl \
-      -n ~/Downloads/pomoTask.kdl
-      # -n ./tests/zjstatus/layout.kdl
+      -n ./tests/zjstatus/layout.kdl
     ;;
   esac
 
