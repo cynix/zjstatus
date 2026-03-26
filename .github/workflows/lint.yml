@@ -1,6 +1,8 @@
 ---
 on: push
 name: Test & Lint
+permissions:
+  contents: read
 
 # Make sure CI fails on all warnings, including Clippy lints
 env:
@@ -10,35 +12,45 @@ jobs:
   clippy_check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
+
+      - name: Install WASI SDK
+        run: |
+          wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-linux.tar.gz
+          tar -xzf wasi-sdk-20.0-linux.tar.gz
+          mv wasi-sdk-20.0 /opt/wasi-sdk
+        env:
+          WASI_SDK_PATH: /opt/wasi-sdk
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@4f647fc679bcd3b11499ccb42104547c83dabe96  # stable
+        uses: dtolnay/rust-toolchain@4f647fc679bcd3b11499ccb42104547c83dabe96 # stable
         with:
-          toolchain: '1.86.0'
+          toolchain: "1.91.0"
           target: wasm32-wasip1
           components: clippy
 
       - name: Run Clippy
-        uses: clechasseur/rs-clippy-check@23f6dcf86d7e4e0d98b000bba0bb81ac587c44aa  # v3
+        uses: clechasseur/rs-clippy-check@286fd9545eb133adad54b4af34bcb642e266ddd1 # v3
         with:
           args: --all-features --lib
-          toolchain: '1.86.0'
+          toolchain: "1.91.0"
 
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
-      - uses: jcbhmr/setup-wasmtime@960c367a99921eb0b02f5778fce9ae8f110bf0f0  # v2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
+      - uses: jcbhmr/setup-wasmtime@960c367a99921eb0b02f5778fce9ae8f110bf0f0 # v2
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@4f647fc679bcd3b11499ccb42104547c83dabe96  # stable
+        uses: dtolnay/rust-toolchain@4f647fc679bcd3b11499ccb42104547c83dabe96 # stable
         with:
-          toolchain: '1.86.0'
+          toolchain: "1.91.0"
           target: wasm32-wasip1
+        env:
+          WASI_SDK_PATH: /opt/wasi-sdk
 
       - name: Install cargo wasi
-        run: cargo install cargo-nextest
+        run: cargo install --locked cargo-nextest
 
       - name: Run tests
         run: cargo nextest run --lib
